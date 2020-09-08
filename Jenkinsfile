@@ -38,6 +38,36 @@ pipeline {
 				sh "mvn failsafe:integration-test failsafe:verify"
 			}
 		}
+
+		stage('Build Docker Image'){
+			steps {
+				//docker build -t jesusjrcardenas/currency-exchange-devops:$env.BUILD_TAG
+				script {
+					dockerImage = docker.build("jesusjrcardenas/currency-exchange-devops:${env.BUILD_TAG}")
+				}
+			}
+		}
+
+		stage('Push Docker Image'){
+			steps {
+				script {
+					//dockerhub es la credencial creada previamente
+					docker.withRegistry('','dockerhub'){
+						dockerImage.push();
+						dockerImage.push('latest');
+					}	
+				}
+			}
+		}
+
+		stage('Package'){
+			steps {
+				// esto crea el jar
+				sh "mvn package -DskipTests"
+			}
+		}
+
+
 	}
 
 	post {
