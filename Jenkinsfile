@@ -30,6 +30,16 @@ pipeline {
 				echo "Integration Test"
 			}
 		}
+	} post {
+		always {
+			echo 'The pipeline has finished'
+		}
+		success {
+			echo 'The pipeline has finished successfully'
+		}
+		failure {
+			echo 'The pipeline has finished with a failure'
+		}
 	}
 }
 
