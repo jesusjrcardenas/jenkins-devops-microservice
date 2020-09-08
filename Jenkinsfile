@@ -1,8 +1,8 @@
-/DECLARATIVE
+//declarative
 pipeline {
+	
 	agent any
-	// agent { docker { image 'maven:3.6.3'} }
-	// agent { docker { image 'node:13.8'} }
+
 	environment {
 		dockerHome = tool 'myDocker'
 		mavenHome = tool 'myMaven'
@@ -10,7 +10,7 @@ pipeline {
 	}
 
 	stages {
-		stage('Checkout') {
+		stage('Checkout'){
 			steps {
 				sh 'mvn --version'
 				sh 'docker version'
@@ -23,61 +23,63 @@ pipeline {
 				echo "BUILD_URL - $env.BUILD_URL"
 			}
 		}
-		stage('Compile') {
+		stage('Compile'){
 			steps {
 				sh "mvn clean compile"
 			}
 		}
-
-		stage('Test') {
+		stage('Test'){
 			steps {
 				sh "mvn test"
 			}
 		}
-
-		stage('Integration Test') {
+		stage('Integration Test'){
 			steps {
 				sh "mvn failsafe:integration-test failsafe:verify"
 			}
 		}
 
-		stage('Package') {
+		stage('Build Docker Image'){
 			steps {
+				//docker build -t jesusjrcardenas/currency-exchange-devops:$env.BUILD_TAG
+				script {
+					dockerImage = docker.build("jesusjrcardenas/currency-exchange-devops:${env.BUILD_TAG}")
+				}
+			}
+		}
+
+		stage('Push Docker Image'){
+			steps {
+				script {
+					//dockerhub es la credencial creada previamente
+					docker.withRegistry('','dockerhub'){
+						dockerImage.push();
+						dockerImage.push('latest');
+					}	
+				}
+			}
+		}
+
+		stage('Package'){
+			steps {
+				// esto crea el jar
 				sh "mvn package -DskipTests"
 			}
 		}
 
-		stage('Build Docker Image') {
-			steps {
-				//"docker build -t in28min/currency-exchange-devops:$env.BUILD_TAG"
-				script {
-					dockerImage = docker.build("jesusjrcardenas/currency-exchange-devops:${env.BUILD_TAG}")
-				}
 
-			}
-		}
+	}
 
-		stage('Push Docker Image') {
-			steps {
-				script {
-					docker.withRegistry('', 'dockerhub') {
-						dockerImage.push();
-						dockerImage.push('latest');
-					}
-				}
-			}
-		}
-	} 
-	
 	post {
 		always {
-			echo 'Im awesome. I run always'
+			echo 'The pipeline has finished'
 		}
 		success {
-			echo 'I run when you are successful'
+			echo 'The pipeline has finished successfully'
 		}
 		failure {
-			echo 'I run when you fail'
+			echo 'The pipeline has finished with a failure'
 		}
 	}
 }
+
