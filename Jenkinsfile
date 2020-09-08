@@ -28,6 +28,11 @@ pipeline {
 				sh "mvn clean compile"
 			}
 		}
+		stage('Install'){
+			steps {
+				sh "mvn clean install"
+			}
+		}
 		stage('Test'){
 			steps {
 				sh "mvn test"
