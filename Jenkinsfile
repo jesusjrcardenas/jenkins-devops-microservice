@@ -30,7 +30,8 @@ pipeline {
 				echo "Integration Test"
 			}
 		}
-	} post {
+	} 
+	post {
 		always {
 			echo 'The pipeline has finished'
 		}
